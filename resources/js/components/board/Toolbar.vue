@@ -135,7 +135,8 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     padding: 8px 14px;
     height: 48px;
     background: var(--color-card);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border-subtle);
+    box-shadow: 0 1px 0 var(--color-border);
     user-select: none;
 }
 .toolbar__brand {
@@ -185,14 +186,15 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     font-size: 12.5px;
     color: var(--color-foreground);
     background: transparent;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 80ms ease, border-color 80ms ease;
     height: 30px;
 }
 .toolbar__btn:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+    background: var(--color-surface-2);
+    border-color: var(--color-border);
 }
 .toolbar__btn:disabled {
     opacity: 0.4;

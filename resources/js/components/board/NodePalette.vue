@@ -84,8 +84,8 @@ function add(type: NodeType) {
     transition: background-color 80ms ease, border-color 80ms ease;
 }
 .palette__item:hover {
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    background: var(--color-surface-2);
+    border-color: var(--color-border-subtle);
 }
 .palette__icon {
     display: inline-flex;
@@ -94,17 +94,19 @@ function add(type: NodeType) {
     align-items: center;
     justify-content: center;
     border-radius: 5px;
-    background: color-mix(in srgb, var(--accent) 18%, transparent);
-    color: var(--accent);
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: var(--color-primary);
 }
-.palette__label { font-weight: 500; }
+.palette__item:active {
+    background: var(--color-surface-3);
+}
 
 .palette__hints {
     margin-top: auto;
     padding-top: 14px;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border-subtle);
     font-size: 11px;
-    color: var(--color-muted-foreground);
+    color: var(--color-text-secondary);
     display: flex;
     flex-direction: column;
     gap: 4px;

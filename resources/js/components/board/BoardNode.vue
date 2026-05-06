@@ -90,15 +90,15 @@ const issueTitle = computed(() => props.issues.map((i) => `• ${i.message}`).jo
     background: var(--color-node);
     border: 1px solid var(--color-border);
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--color-foreground) 4%, transparent),
-        0 1px 2px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 color-mix(in srgb, var(--color-foreground) 6%, transparent),
+        0 1px 3px rgba(0, 0, 0, 0.28);
     color: var(--color-card-foreground);
     user-select: none;
     overflow: hidden;
     transition:
-        border-color 140ms ease,
-        box-shadow 160ms ease,
-        transform 140ms ease;
+        border-color 120ms ease,
+        box-shadow 140ms ease,
+        transform 120ms ease;
     will-change: transform;
 }
 .board-node::before {
@@ -107,20 +107,19 @@ const issueTitle = computed(() => props.issues.map((i) => `• ${i.message}`).jo
     left: 0; top: 0; bottom: 0;
     width: 2px;
     background: var(--node-accent);
-    opacity: 0.7;
+    opacity: 0.8;
 }
 .board-node:hover {
     border-color: var(--color-border-strong);
     box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--color-foreground) 5%, transparent),
-        0 4px 14px rgba(0, 0, 0, 0.32);
+        inset 0 1px 0 color-mix(in srgb, var(--color-foreground) 7%, transparent),
+        0 4px 16px rgba(0, 0, 0, 0.35);
 }
 .board-node.is-selected {
     border-color: var(--color-ring);
     box-shadow:
-        0 0 0 1px var(--color-ring),
-        0 0 0 4px color-mix(in srgb, var(--color-ring) 14%, transparent),
-        0 6px 18px rgba(0, 0, 0, 0.36);
+        0 0 0 3px color-mix(in srgb, var(--color-ring) 20%, transparent),
+        0 6px 20px rgba(0, 0, 0, 0.36);
 }
 .board-node.has-error    { border-color: color-mix(in srgb, hsl(0 60% 55%) 55%, var(--color-border)); }
 .board-node.has-warning  { border-color: color-mix(in srgb, hsl(35 55% 55%) 45%, var(--color-border)); }
@@ -129,7 +128,7 @@ const issueTitle = computed(() => props.issues.map((i) => `• ${i.message}`).jo
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 9px 10px 4px 12px;
+    padding: 8px 10px 5px 11px;
     cursor: grab;
 }
 .board-node__icon {
@@ -162,13 +161,13 @@ const issueTitle = computed(() => props.issues.map((i) => `• ${i.message}`).jo
     height: 6px;
     border-radius: 50%;
 }
-.board-node__alert.is-error   { background: hsl(0 70% 60%); box-shadow: 0 0 0 3px color-mix(in srgb, hsl(0 70% 60%) 22%, transparent); }
-.board-node__alert.is-warning { background: hsl(35 75% 60%); box-shadow: 0 0 0 3px color-mix(in srgb, hsl(35 75% 60%) 22%, transparent); }
+.board-node__alert.is-error   { background: hsl(0 65% 62%); box-shadow: 0 0 0 2.5px color-mix(in srgb, hsl(0 65% 62%) 28%, transparent); }
+.board-node__alert.is-warning { background: hsl(35 70% 62%); box-shadow: 0 0 0 2.5px color-mix(in srgb, hsl(35 70% 62%) 28%, transparent); }
 
 .board-node__body {
-    padding: 0 12px 9px;
+    padding: 2px 11px 8px;
     font-size: 11.5px;
-    color: var(--color-muted-foreground);
+    color: var(--color-text-secondary);
     line-height: 1.35;
     overflow: hidden;
     text-overflow: ellipsis;

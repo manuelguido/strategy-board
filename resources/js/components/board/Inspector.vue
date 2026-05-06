@@ -317,26 +317,27 @@ const edgeTypeOptions = EDGE_TYPES;
     gap: 8px;
     margin-bottom: 4px;
     padding-bottom: 10px;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
-.inspector__chip { width: 10px; height: 10px; border-radius: 3px; }
-.inspector__title { font-weight: 600; font-size: 13px; flex: 1; }
+.inspector__chip { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
+.inspector__title { font-weight: 600; font-size: 13.5px; flex: 1; letter-spacing: -0.01em; }
 .inspector__icon-btn {
     background: transparent;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 5px;
     padding: 4px;
-    color: var(--color-muted-foreground);
+    color: var(--color-text-secondary);
     cursor: pointer;
+    transition: color 80ms ease, border-color 80ms ease, background 80ms ease;
 }
-.inspector__icon-btn:hover { color: hsl(0 70% 60%); border-color: hsl(0 70% 55%); }
+.inspector__icon-btn:hover { color: hsl(0 65% 65%); border-color: color-mix(in srgb, hsl(0 65% 50%) 50%, var(--color-border)); }
 
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label {
     font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--color-muted-foreground);
+    color: var(--color-text-tertiary);
     font-weight: 600;
 }
 .field input,
