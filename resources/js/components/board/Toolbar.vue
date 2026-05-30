@@ -3,19 +3,29 @@
  * Toolbar — top bar: editable board name, undo/redo, fit, zoom %, export menu,
  * import button.
  */
+import {
+    Undo2,
+    Redo2,
+    Maximize2,
+    Download,
+    Upload,
+    ChevronDown,
+    Focus,
+} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { Undo2, Redo2, Maximize2, Download, Upload, ChevronDown, Focus } from 'lucide-vue-next';
 import { useBoardStore } from '@/composables/board/useBoardStore';
-import { useHistory } from '@/composables/board/useHistory';
 import { useExport } from '@/composables/board/useExport';
+import { useHistory } from '@/composables/board/useHistory';
 import { useViewport } from '@/composables/board/useViewport';
 
-const props = defineProps<{ viewportSize: { width: number; height: number } }>();
+const props = defineProps<{
+    viewportSize: { width: number; height: number };
+}>();
 
-const store    = useBoardStore();
-const history  = useHistory();
+const store = useBoardStore();
+const history = useHistory();
 const exporter = useExport();
-const vp       = useViewport();
+const vp = useViewport();
 
 const name = computed({
     get: () => store.name.value,
@@ -30,12 +40,17 @@ const exportOpen = ref(false);
 async function onFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) return;
+
+    if (!file) {
+        return;
+    }
+
     const result = await exporter.importFromFile(file);
+
     if (!result.ok) {
-        // eslint-disable-next-line no-alert
         alert(result.error || 'Import failed.');
     }
+
     input.value = '';
 }
 
@@ -51,8 +66,12 @@ function toggleFocus() {
     store.toggleFocusOnSelection();
 }
 
-const focusEnabled = computed(() => store.focusActive.value || store.selection.nodes.size === 1);
-const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focus flow');
+const focusEnabled = computed(
+    () => store.focusActive.value || store.selection.nodes.size === 1,
+);
+const focusLabel = computed(() =>
+    store.focusActive.value ? 'Exit focus' : 'Focus flow',
+);
 </script>
 
 <template>
@@ -75,20 +94,28 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
                 :disabled="!history.canUndo.value"
                 title="Undo (⌘Z)"
                 @click="history.undo()"
-            ><Undo2 :size="15" /></button>
+            >
+                <Undo2 :size="15" />
+            </button>
             <button
                 class="toolbar__btn"
                 :disabled="!history.canRedo.value"
                 title="Redo (⇧⌘Z)"
                 @click="history.redo()"
-            ><Redo2 :size="15" /></button>
+            >
+                <Redo2 :size="15" />
+            </button>
         </div>
 
         <div class="toolbar__group">
             <button class="toolbar__btn" title="Fit to content" @click="fit">
                 <Maximize2 :size="15" />
             </button>
-            <button class="toolbar__btn toolbar__zoom" @click="setZoom(1)" title="Reset zoom">
+            <button
+                class="toolbar__btn toolbar__zoom"
+                @click="setZoom(1)"
+                title="Reset zoom"
+            >
                 {{ zoomPct }}%
             </button>
             <button
@@ -97,7 +124,9 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
                 :disabled="!focusEnabled"
                 :title="`${focusLabel} (F)`"
                 @click="toggleFocus"
-            ><Focus :size="15" /></button>
+            >
+                <Focus :size="15" />
+            </button>
         </div>
 
         <div class="toolbar__spacer" />
@@ -110,17 +139,33 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
                 style="display: none"
                 @change="onFileChange"
             />
-            <button class="toolbar__btn" title="Import JSON" @click="fileInput?.click()">
+            <button
+                class="toolbar__btn"
+                title="Import JSON"
+                @click="fileInput?.click()"
+            >
                 <Upload :size="15" /> <span>Import</span>
             </button>
 
             <div class="toolbar__menu">
-                <button class="toolbar__btn toolbar__btn--primary" @click="exportOpen = !exportOpen">
-                    <Download :size="15" /> <span>Export</span> <ChevronDown :size="13" />
+                <button
+                    class="toolbar__btn toolbar__btn--primary"
+                    @click="exportOpen = !exportOpen"
+                >
+                    <Download :size="15" /> <span>Export</span>
+                    <ChevronDown :size="13" />
                 </button>
-                <div v-if="exportOpen" class="toolbar__menu-list" @click="exportOpen = false">
-                    <button @click="exporter.downloadJSON()">JSON model (.json)</button>
-                    <button @click="exporter.downloadMarkdown()">Markdown docs (.md)</button>
+                <div
+                    v-if="exportOpen"
+                    class="toolbar__menu-list"
+                    @click="exportOpen = false"
+                >
+                    <button @click="exporter.downloadJSON()">
+                        JSON model (.json)
+                    </button>
+                    <button @click="exporter.downloadMarkdown()">
+                        Markdown docs (.md)
+                    </button>
                 </div>
             </div>
         </div>
@@ -151,10 +196,16 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     height: 8px;
     border-radius: 50%;
     background: var(--color-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);
+    box-shadow: 0 0 0 3px
+        color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
-.toolbar__brand-text { letter-spacing: -0.01em; }
-.toolbar__sep { color: var(--color-text-tertiary); font-weight: 400; }
+.toolbar__brand-text {
+    letter-spacing: -0.01em;
+}
+.toolbar__sep {
+    color: var(--color-text-tertiary);
+    font-weight: 400;
+}
 .toolbar__name {
     background: transparent;
     border: 1px solid transparent;
@@ -168,15 +219,24 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     outline: none;
     transition: border-color 100ms;
 }
-.toolbar__name:hover { border-color: var(--color-border); background: var(--color-surface-2); }
+.toolbar__name:hover {
+    border-color: var(--color-border);
+    background: var(--color-surface-2);
+}
 .toolbar__name:focus {
     border-color: var(--color-ring);
     background: var(--color-surface-2);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ring) 18%, transparent);
 }
 
-.toolbar__group { display: flex; align-items: center; gap: 4px; }
-.toolbar__spacer { flex: 1; }
+.toolbar__group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.toolbar__spacer {
+    flex: 1;
+}
 
 .toolbar__btn {
     display: inline-flex;
@@ -189,7 +249,9 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     border: 1px solid var(--color-border-subtle);
     border-radius: 6px;
     cursor: pointer;
-    transition: background-color 80ms ease, border-color 80ms ease;
+    transition:
+        background-color 80ms ease,
+        border-color 80ms ease;
     height: 30px;
 }
 .toolbar__btn:hover:not(:disabled) {
@@ -211,11 +273,21 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     border-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
 }
 .toolbar__btn--primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-primary) 90%, var(--color-foreground));
+    background: color-mix(
+        in srgb,
+        var(--color-primary) 90%,
+        var(--color-foreground)
+    );
 }
-.toolbar__zoom { width: 64px; justify-content: center; font-variant-numeric: tabular-nums; }
+.toolbar__zoom {
+    width: 64px;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+}
 
-.toolbar__menu { position: relative; }
+.toolbar__menu {
+    position: relative;
+}
 .toolbar__menu-list {
     position: absolute;
     right: 0;
@@ -225,7 +297,9 @@ const focusLabel = computed(() => store.focusActive.value ? 'Exit focus' : 'Focu
     border-radius: 8px;
     min-width: 200px;
     padding: 4px;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.45),
+        0 1px 0 rgba(255, 255, 255, 0.04) inset;
     z-index: 50;
 }
 .toolbar__menu-list button {

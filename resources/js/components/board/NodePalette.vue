@@ -4,20 +4,35 @@
  * the centre of the current viewport (transformed back to world space).
  */
 import { Box, CloudOff, Cpu, Database, Globe, Layers } from 'lucide-vue-next';
-import type { NodeType } from '@/types/board';
-import { NODE_TYPES } from '@/types/board';
 import { useBoardActions } from '@/composables/board/useBoardActions';
 import { useViewport } from '@/composables/board/useViewport';
+import type { NodeType } from '@/types/board';
+import { NODE_TYPES } from '@/types/board';
 
-const props = defineProps<{ viewportSize: { width: number; height: number } }>();
+const props = defineProps<{
+    viewportSize: { width: number; height: number };
+}>();
 
-const ICONS: Record<string, typeof Box> = { Box, Globe, Database, Layers, Cpu, CloudOff };
+const ICONS: Record<string, typeof Box> = {
+    Box,
+    Globe,
+    Database,
+    Layers,
+    Cpu,
+    CloudOff,
+};
 const actions = useBoardActions();
 const vp = useViewport();
 
 function add(type: NodeType) {
-    const center = vp.toWorld({ x: props.viewportSize.width / 2, y: props.viewportSize.height / 2 });
-    actions.addNodeAt(type, { x: Math.round(center.x - 100), y: Math.round(center.y - 46) });
+    const center = vp.toWorld({
+        x: props.viewportSize.width / 2,
+        y: props.viewportSize.height / 2,
+    });
+    actions.addNodeAt(type, {
+        x: Math.round(center.x - 100),
+        y: Math.round(center.y - 46),
+    });
 }
 </script>
 
@@ -81,7 +96,9 @@ function add(type: NodeType) {
     font-size: 12.5px;
     cursor: pointer;
     text-align: left;
-    transition: background-color 80ms ease, border-color 80ms ease;
+    transition:
+        background-color 80ms ease,
+        border-color 80ms ease;
 }
 .palette__item:hover {
     background: var(--color-surface-2);

@@ -18,10 +18,18 @@ import { useBoardStore } from './useBoardStore';
 
 function detectCycle(nodes: BoardNode[], edges: BoardEdge[]): string[][] {
     // Restrict cycle detection to edges that imply runtime coupling.
-    const relevant = edges.filter((e) => e.type === 'sync' || e.type === 'dependency');
+    const relevant = edges.filter(
+        (e) => e.type === 'sync' || e.type === 'dependency',
+    );
     const adj = new Map<string, string[]>();
-    for (const n of nodes) adj.set(n.id, []);
-    for (const e of relevant) adj.get(e.source)?.push(e.target);
+
+    for (const n of nodes) {
+        adj.set(n.id, []);
+    }
+
+    for (const e of relevant) {
+        adj.get(e.source)?.push(e.target);
+    }
 
     const cycles: string[][] = [];
     const stack: string[] = [];
@@ -32,19 +40,29 @@ function detectCycle(nodes: BoardNode[], edges: BoardEdge[]): string[][] {
         visited.add(u);
         inStack.add(u);
         stack.push(u);
+
         for (const v of adj.get(u) || []) {
             if (!visited.has(v)) {
                 dfs(v);
             } else if (inStack.has(v)) {
                 const i = stack.indexOf(v);
-                if (i >= 0) cycles.push(stack.slice(i));
+
+                if (i >= 0) {
+                    cycles.push(stack.slice(i));
+                }
             }
         }
+
         stack.pop();
         inStack.delete(u);
     }
 
-    for (const n of nodes) if (!visited.has(n.id)) dfs(n.id);
+    for (const n of nodes) {
+        if (!visited.has(n.id)) {
+            dfs(n.id);
+        }
+    }
+
     return cycles;
 }
 
@@ -68,11 +86,17 @@ export function useValidation() {
                     nodeIds: [e.source],
                     edgeIds: [e.id],
                 });
+
                 return;
             }
+
             const src = byId.get(e.source);
             const tgt = byId.get(e.target);
-            if (!src || !tgt) return;
+
+            if (!src || !tgt) {
+                return;
+            }
+
             if (!isEdgeAllowed(src.type, tgt.type, e.type)) {
                 out.push({
                     id: `invalid-edge:${e.id}`,
@@ -83,6 +107,7 @@ export function useValidation() {
                     edgeIds: [e.id],
                 });
             }
+
             void i;
         });
 
@@ -108,27 +133,42 @@ export function useValidation() {
         // ── 3. multi-writer ────────────────────────────────────────
         const writersByDb = new Map<string, Set<string>>();
         es.forEach((e) => {
-            if (e.type !== 'write') return;
+            if (e.type !== 'write') {
+                return;
+            }
+
             const tgt = byId.get(e.target);
-            if (!tgt || tgt.type !== 'database') return;
+
+            if (!tgt || tgt.type !== 'database') {
+                return;
+            }
+
             const set = writersByDb.get(e.target) ?? new Set<string>();
             set.add(e.source);
             writersByDb.set(e.target, set);
         });
         writersByDb.forEach((writers, dbId) => {
-            if (writers.size <= 1) return;
+            if (writers.size <= 1) {
+                return;
+            }
+
             const db = byId.get(dbId)!;
-            const services = [...writers].map((id) => byId.get(id)).filter(Boolean) as BoardNode[];
+            const services = [...writers]
+                .map((id) => byId.get(id))
+                .filter(Boolean) as BoardNode[];
             // If all writers share a domain, downgrade to info; otherwise warning.
             const domains = new Set(services.map((s) => s.domain ?? '∅'));
-            const sharedDomain = domains.size === 1 && db.domain && domains.has(db.domain);
+            const sharedDomain =
+                domains.size === 1 && db.domain && domains.has(db.domain);
             out.push({
                 id: `multi-writer:${dbId}`,
                 severity: sharedDomain ? 'info' : 'warning',
                 rule: 'multi-writer',
                 message: `${db.name} is written to by ${services.length} services (${services.map((s) => s.name).join(', ')}).`,
                 nodeIds: [dbId, ...services.map((s) => s.id)],
-                edgeIds: es.filter((e) => e.type === 'write' && e.target === dbId).map((e) => e.id),
+                edgeIds: es
+                    .filter((e) => e.type === 'write' && e.target === dbId)
+                    .map((e) => e.id),
             });
         });
 
@@ -142,9 +182,12 @@ export function useValidation() {
                 message: `Cycle: ${cycle.map((id) => byId.get(id)?.name ?? id).join(' → ')} → …`,
                 nodeIds: cycle,
                 edgeIds: es
-                    .filter((e) => (e.type === 'sync' || e.type === 'dependency')
-                        && cycle.includes(e.source)
-                        && cycle.includes(e.target))
+                    .filter(
+                        (e) =>
+                            (e.type === 'sync' || e.type === 'dependency') &&
+                            cycle.includes(e.source) &&
+                            cycle.includes(e.target),
+                    )
                     .map((e) => e.id),
             });
         });
@@ -156,10 +199,14 @@ export function useValidation() {
         const map = new Map<string, Issue[]>();
         issues.value.forEach((iss) => {
             iss.edgeIds.forEach((id) => {
-                if (!map.has(id)) map.set(id, []);
+                if (!map.has(id)) {
+                    map.set(id, []);
+                }
+
                 map.get(id)!.push(iss);
             });
         });
+
         return map;
     });
 
@@ -167,15 +214,23 @@ export function useValidation() {
         const map = new Map<string, Issue[]>();
         issues.value.forEach((iss) => {
             iss.nodeIds.forEach((id) => {
-                if (!map.has(id)) map.set(id, []);
+                if (!map.has(id)) {
+                    map.set(id, []);
+                }
+
                 map.get(id)!.push(iss);
             });
         });
+
         return map;
     });
 
-    const errorCount   = computed(() => issues.value.filter((i) => i.severity === 'error').length);
-    const warningCount = computed(() => issues.value.filter((i) => i.severity === 'warning').length);
+    const errorCount = computed(
+        () => issues.value.filter((i) => i.severity === 'error').length,
+    );
+    const warningCount = computed(
+        () => issues.value.filter((i) => i.severity === 'warning').length,
+    );
 
     return { issues, issueByEdge, issueByNode, errorCount, warningCount };
 }

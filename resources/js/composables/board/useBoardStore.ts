@@ -24,6 +24,7 @@ const LS_KEY = 'strategy-board.state.v1';
 let _counter = 0;
 function uid(prefix: string): string {
     _counter += 1;
+
     return `${prefix}_${Date.now().toString(36)}${_counter.toString(36)}`;
 }
 
@@ -43,9 +44,21 @@ function emptySelection(): Selection {
 function loadFromStorage(): BoardState | null {
     try {
         const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return null;
+
+        if (!raw) {
+            return null;
+        }
+
         const parsed = JSON.parse(raw) as BoardState;
-        if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges)) return null;
+
+        if (
+            !parsed ||
+            !Array.isArray(parsed.nodes) ||
+            !Array.isArray(parsed.edges)
+        ) {
+            return null;
+        }
+
         return parsed;
     } catch {
         return null;
@@ -54,33 +67,41 @@ function loadFromStorage(): BoardState | null {
 
 const initial = loadFromStorage() ?? cloneState(SAMPLE_BOARD);
 
-const name      = ref(initial.name);
-const nodes     = ref<BoardNode[]>(initial.nodes);
-const edges     = ref<BoardEdge[]>(initial.edges);
-const viewport  = reactive<Viewport>({ ...initial.viewport });
+const name = ref(initial.name);
+const nodes = ref<BoardNode[]>(initial.nodes);
+const edges = ref<BoardEdge[]>(initial.edges);
+const viewport = reactive<Viewport>({ ...initial.viewport });
 const selection = reactive<Selection>(emptySelection());
 
 /** Set of node ids that participate in the current focused flow. Empty = no focus. */
 const focusedNodes = ref<Set<string>>(new Set());
 /** Set of edge ids that participate in the current focused flow. */
 const focusedEdges = ref<Set<string>>(new Set());
-const focusActive  = computed(() => focusedNodes.value.size > 0);
+const focusActive = computed(() => focusedNodes.value.size > 0);
 
 /* ── Persistence (debounced) ────────────────────────────────────── */
 
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
 function schedulePersist() {
-    if (persistTimer) clearTimeout(persistTimer);
+    if (persistTimer) {
+        clearTimeout(persistTimer);
+    }
+
     persistTimer = setTimeout(() => {
         try {
             const snapshot: BoardState = {
                 name: name.value,
                 nodes: nodes.value,
                 edges: edges.value,
-                viewport: { offset: { ...viewport.offset }, zoom: viewport.zoom },
+                viewport: {
+                    offset: { ...viewport.offset },
+                    zoom: viewport.zoom,
+                },
             };
             localStorage.setItem(LS_KEY, JSON.stringify(snapshot));
-        } catch { /* quota */ }
+        } catch {
+            /* quota */
+        }
     }, 200);
 }
 
@@ -108,12 +129,18 @@ function findNode(id: string): BoardNode | undefined {
 
 function defaultMetadataFor(type: NodeType) {
     switch (type) {
-        case 'api':      return { endpoints: [], auth: 'none' as const };
-        case 'service':  return { runtime: '' };
-        case 'database': return { engine: '', tables: [] };
-        case 'queue':    return { broker: '', topics: [] };
-        case 'worker':   return { schedule: '' };
-        case 'external': return { vendor: '' };
+        case 'api':
+            return { endpoints: [], auth: 'none' as const };
+        case 'service':
+            return { runtime: '' };
+        case 'database':
+            return { engine: '', tables: [] };
+        case 'queue':
+            return { broker: '', topics: [] };
+        case 'worker':
+            return { schedule: '' };
+        case 'external':
+            return { vendor: '' };
     }
 }
 
@@ -123,10 +150,12 @@ function nextNameFor(type: NodeType): string {
     const taken = new Set(nodes.value.map((n) => n.name));
     let i = nodes.value.filter((n) => n.type === type).length + 1;
     let candidate = `${base}-${i}`;
+
     while (taken.has(candidate)) {
         i += 1;
         candidate = `${base}-${i}`;
     }
+
     return candidate;
 }
 
@@ -150,6 +179,7 @@ function addNode(opts: AddNodeOptions): BoardNode {
     };
     nodes.value = [...nodes.value, node];
     schedulePersist();
+
     return node;
 }
 
@@ -160,7 +190,9 @@ function updateNode(id: string, patch: Partial<BoardNode>) {
                   ...n,
                   ...patch,
                   position: patch.position ? { ...patch.position } : n.position,
-                  metadata: patch.metadata ? { ...n.metadata, ...patch.metadata } : n.metadata,
+                  metadata: patch.metadata
+                      ? { ...n.metadata, ...patch.metadata }
+                      : n.metadata,
                   tags: patch.tags ? [...patch.tags] : n.tags,
               }
             : n,
@@ -170,12 +202,14 @@ function updateNode(id: string, patch: Partial<BoardNode>) {
 
 function moveNode(id: string, position: Point) {
     const arr = nodes.value;
+
     for (let i = 0; i < arr.length; i++) {
         if (arr[i].id === id) {
             arr[i] = { ...arr[i], position: { ...position } };
             break;
         }
     }
+
     nodes.value = arr;
     schedulePersist();
 }
@@ -185,12 +219,20 @@ function moveNode(id: string, position: Point) {
  * so a 50-node multi-select drag doesn't trigger 50 reactivity cycles per frame.
  */
 function moveNodesBatch(updates: Map<string, Point>) {
-    if (!updates.size) return;
+    if (!updates.size) {
+        return;
+    }
+
     const arr = nodes.value.slice();
+
     for (let i = 0; i < arr.length; i++) {
         const next = updates.get(arr[i].id);
-        if (next) arr[i] = { ...arr[i], position: { x: next.x, y: next.y } };
+
+        if (next) {
+            arr[i] = { ...arr[i], position: { x: next.x, y: next.y } };
+        }
     }
+
     nodes.value = arr;
     schedulePersist();
 }
@@ -198,25 +240,53 @@ function moveNodesBatch(updates: Map<string, Point>) {
 function removeNodes(ids: string[]) {
     const set = new Set(ids);
     nodes.value = nodes.value.filter((n) => !set.has(n.id));
-    edges.value = edges.value.filter((e) => !set.has(e.source) && !set.has(e.target));
+    edges.value = edges.value.filter(
+        (e) => !set.has(e.source) && !set.has(e.target),
+    );
     ids.forEach((id) => selection.nodes.delete(id));
     schedulePersist();
 }
 
-function addEdge(source: string, target: string, type: EdgeType): BoardEdge | null {
-    if (source === target) return null;
-    const exists = edges.value.some((e) => e.source === source && e.target === target && e.type === type);
-    if (exists) return null;
-    const edge: BoardEdge = { id: uid('e'), type, source, target, metadata: {} };
+function addEdge(
+    source: string,
+    target: string,
+    type: EdgeType,
+): BoardEdge | null {
+    if (source === target) {
+        return null;
+    }
+
+    const exists = edges.value.some(
+        (e) => e.source === source && e.target === target && e.type === type,
+    );
+
+    if (exists) {
+        return null;
+    }
+
+    const edge: BoardEdge = {
+        id: uid('e'),
+        type,
+        source,
+        target,
+        metadata: {},
+    };
     edges.value = [...edges.value, edge];
     schedulePersist();
+
     return edge;
 }
 
 function updateEdge(id: string, patch: Partial<BoardEdge>) {
     edges.value = edges.value.map((e) =>
         e.id === id
-            ? { ...e, ...patch, metadata: patch.metadata ? { ...e.metadata, ...patch.metadata } : e.metadata }
+            ? {
+                  ...e,
+                  ...patch,
+                  metadata: patch.metadata
+                      ? { ...e.metadata, ...patch.metadata }
+                      : e.metadata,
+              }
             : e,
     );
     schedulePersist();
@@ -238,6 +308,7 @@ function selectNode(id: string, additive = false) {
     } else {
         selection.edges.clear();
     }
+
     selection.nodes.add(id);
 }
 
@@ -248,6 +319,7 @@ function selectEdge(id: string, additive = false) {
     } else {
         selection.nodes.clear();
     }
+
     selection.edges.add(id);
 }
 
@@ -262,18 +334,22 @@ function clearSelection() {
     selection.edges.clear();
 }
 
-const selectedNodes = computed(() => nodes.value.filter((n) => selection.nodes.has(n.id)));
-const selectedEdges = computed(() => edges.value.filter((e) => selection.edges.has(e.id)));
+const selectedNodes = computed(() =>
+    nodes.value.filter((n) => selection.nodes.has(n.id)),
+);
+const selectedEdges = computed(() =>
+    edges.value.filter((e) => selection.edges.has(e.id)),
+);
 
 const singleSelectedNode = computed<BoardNode | null>(() =>
     selection.nodes.size === 1 && selection.edges.size === 0
-        ? findNode([...selection.nodes][0]) ?? null
+        ? (findNode([...selection.nodes][0]) ?? null)
         : null,
 );
 
 const singleSelectedEdge = computed<BoardEdge | null>(() =>
     selection.edges.size === 1 && selection.nodes.size === 0
-        ? edges.value.find((e) => e.id === [...selection.edges][0]) ?? null
+        ? (edges.value.find((e) => e.id === [...selection.edges][0]) ?? null)
         : null,
 );
 
@@ -281,8 +357,16 @@ const singleSelectedEdge = computed<BoardEdge | null>(() =>
 
 function replaceAll(next: BoardState) {
     name.value = next.name;
-    nodes.value = next.nodes.map((n) => ({ ...n, position: { ...n.position }, metadata: { ...n.metadata }, tags: [...n.tags] }));
-    edges.value = next.edges.map((e) => ({ ...e, metadata: { ...e.metadata } }));
+    nodes.value = next.nodes.map((n) => ({
+        ...n,
+        position: { ...n.position },
+        metadata: { ...n.metadata },
+        tags: [...n.tags],
+    }));
+    edges.value = next.edges.map((e) => ({
+        ...e,
+        metadata: { ...e.metadata },
+    }));
     viewport.offset = { ...next.viewport.offset };
     viewport.zoom = next.viewport.zoom;
     clearSelection();
@@ -311,30 +395,56 @@ function rename(next: string) {
  */
 function focusFlow(rootId: string) {
     const adjOut = new Map<string, string[]>();
-    const adjIn  = new Map<string, string[]>();
+    const adjIn = new Map<string, string[]>();
     edges.value.forEach((e) => {
-        if (!adjOut.has(e.source)) adjOut.set(e.source, []);
+        if (!adjOut.has(e.source)) {
+            adjOut.set(e.source, []);
+        }
+
         adjOut.get(e.source)!.push(e.target);
-        if (!adjIn.has(e.target)) adjIn.set(e.target, []);
+
+        if (!adjIn.has(e.target)) {
+            adjIn.set(e.target, []);
+        }
+
         adjIn.get(e.target)!.push(e.source);
     });
     const visited = new Set<string>([rootId]);
     const queue: string[] = [rootId];
+
     while (queue.length) {
         const u = queue.shift()!;
-        for (const v of adjOut.get(u) ?? []) if (!visited.has(v)) { visited.add(v); queue.push(v); }
-        for (const v of adjIn.get(u)  ?? []) if (!visited.has(v)) { visited.add(v); queue.push(v); }
+
+        for (const v of adjOut.get(u) ?? []) {
+            if (!visited.has(v)) {
+                visited.add(v);
+                queue.push(v);
+            }
+        }
+
+        for (const v of adjIn.get(u) ?? []) {
+            if (!visited.has(v)) {
+                visited.add(v);
+                queue.push(v);
+            }
+        }
     }
+
     const eIds = new Set<string>();
     edges.value.forEach((e) => {
-        if (visited.has(e.source) && visited.has(e.target)) eIds.add(e.id);
+        if (visited.has(e.source) && visited.has(e.target)) {
+            eIds.add(e.id);
+        }
     });
     focusedNodes.value = visited;
     focusedEdges.value = eIds;
 }
 
 function clearFocus() {
-    if (focusedNodes.value.size === 0 && focusedEdges.value.size === 0) return;
+    if (focusedNodes.value.size === 0 && focusedEdges.value.size === 0) {
+        return;
+    }
+
     focusedNodes.value = new Set();
     focusedEdges.value = new Set();
 }
@@ -342,15 +452,26 @@ function clearFocus() {
 function toggleFocusOnSelection() {
     if (focusActive.value) {
         clearFocus();
+
         return;
     }
+
     const id = [...selection.nodes][0];
-    if (id) focusFlow(id);
+
+    if (id) {
+        focusFlow(id);
+    }
 }
 
 function setViewport(next: Partial<Viewport>) {
-    if (next.offset) viewport.offset = { ...next.offset };
-    if (typeof next.zoom === 'number') viewport.zoom = next.zoom;
+    if (next.offset) {
+        viewport.offset = { ...next.offset };
+    }
+
+    if (typeof next.zoom === 'number') {
+        viewport.zoom = next.zoom;
+    }
+
     schedulePersist();
 }
 

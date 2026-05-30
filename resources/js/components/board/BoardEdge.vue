@@ -35,15 +35,20 @@ const def = computed(() => EDGE_TYPE_MAP[props.edge.type]);
 
 const geom = computed(() => {
     const sx = props.source.position.x + props.source.width;
-    const sy = props.source.position.y + props.source.height / 2 + props.parallelOffset;
+    const sy =
+        props.source.position.y +
+        props.source.height / 2 +
+        props.parallelOffset;
     const tx = props.target.position.x;
-    const ty = props.target.position.y + props.target.height / 2 + props.parallelOffset;
+    const ty =
+        props.target.position.y +
+        props.target.height / 2 +
+        props.parallelOffset;
 
     const dx = tx - sx;
     const absDx = Math.abs(dx);
-    const handle = dx >= 0
-        ? Math.max(36, absDx * 0.5)
-        : Math.max(80, absDx * 0.6 + 40);
+    const handle =
+        dx >= 0 ? Math.max(36, absDx * 0.5) : Math.max(80, absDx * 0.6 + 40);
 
     const c1x = sx + handle;
     const c2x = tx - handle;
@@ -52,15 +57,33 @@ const geom = computed(() => {
     const mx = 0.125 * sx + 0.375 * c1x + 0.375 * c2x + 0.125 * tx;
     const my = 0.125 * sy + 0.375 * sy + 0.375 * ty + 0.125 * ty;
 
-    return { sx, sy, tx, ty, mx, my, path: `M ${sx} ${sy} C ${c1x} ${sy}, ${c2x} ${ty}, ${tx} ${ty}` };
+    return {
+        sx,
+        sy,
+        tx,
+        ty,
+        mx,
+        my,
+        path: `M ${sx} ${sy} C ${c1x} ${sy}, ${c2x} ${ty}, ${tx} ${ty}`,
+    };
 });
 
-const hasError = computed(() => props.issues.some((i) => i.severity === 'error'));
-const hasWarn  = computed(() => props.issues.some((i) => i.severity === 'warning'));
+const hasError = computed(() =>
+    props.issues.some((i) => i.severity === 'error'),
+);
+const hasWarn = computed(() =>
+    props.issues.some((i) => i.severity === 'warning'),
+);
 
 const stroke = computed(() => {
-    if (hasError.value) return 'hsl(0 70% 60%)';
-    if (hasWarn.value)  return 'hsl(35 70% 60%)';
+    if (hasError.value) {
+        return 'hsl(0 70% 60%)';
+    }
+
+    if (hasWarn.value) {
+        return 'hsl(35 70% 60%)';
+    }
+
     return def.value.color;
 });
 
@@ -115,28 +138,42 @@ const isAnimated = computed(() => props.edge.type === 'async');
             :y="geom.my - 6"
             text-anchor="middle"
             class="board-edge__label"
-        >{{ edge.label }}</text>
+            >{{ edge.label }}</text
+        >
     </g>
 </template>
 
 <style scoped>
-.board-edge { transition: opacity 180ms ease; }
-.board-edge.is-dimmed { opacity: 0.1; }
+.board-edge {
+    transition: opacity 180ms ease;
+}
+.board-edge.is-dimmed {
+    opacity: 0.1;
+}
 
-.board-edge__hit { cursor: pointer; pointer-events: stroke; }
+.board-edge__hit {
+    cursor: pointer;
+    pointer-events: stroke;
+}
 
 .board-edge__line {
     pointer-events: none;
     opacity: 0.8;
-    transition: stroke-width 120ms ease, opacity 120ms ease;
+    transition:
+        stroke-width 120ms ease,
+        opacity 120ms ease;
 }
-.board-edge.is-selected .board-edge__line { opacity: 1; }
+.board-edge.is-selected .board-edge__line {
+    opacity: 1;
+}
 
 .board-edge.is-animated .board-edge__line {
     animation: board-edge-flow 1.6s linear infinite;
 }
 @keyframes board-edge-flow {
-    to { stroke-dashoffset: -18; }
+    to {
+        stroke-dashoffset: -18;
+    }
 }
 
 .board-edge__label {
@@ -151,5 +188,7 @@ const isAnimated = computed(() => props.edge.type === 'async');
     stroke-width: 3;
     stroke-linejoin: round;
 }
-.board-edge.is-selected .board-edge__label { fill: var(--color-foreground); }
+.board-edge.is-selected .board-edge__label {
+    fill: var(--color-foreground);
+}
 </style>

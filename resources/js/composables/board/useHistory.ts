@@ -9,9 +9,9 @@ import { computed, ref } from 'vue';
 import type { BoardState } from '@/types/board';
 import { cloneState, useBoardStore } from './useBoardStore';
 
-const past   = ref<BoardState[]>([]);
+const past = ref<BoardState[]>([]);
 const future = ref<BoardState[]>([]);
-const MAX    = 100;
+const MAX = 100;
 
 let applying = false;
 
@@ -23,29 +23,48 @@ export function useHistory() {
     const store = useBoardStore();
 
     function record() {
-        if (applying) return;
+        if (applying) {
+            return;
+        }
+
         past.value.push(store.snapshot());
-        if (past.value.length > MAX) past.value.shift();
-        if (future.value.length) future.value = [];
+
+        if (past.value.length > MAX) {
+            past.value.shift();
+        }
+
+        if (future.value.length) {
+            future.value = [];
+        }
     }
 
     function undo() {
-        if (!past.value.length) return;
+        if (!past.value.length) {
+            return;
+        }
+
         const prev = past.value.pop()!;
         future.value.push(store.snapshot());
         applying = true;
         store.replaceAll(cloneState(prev));
         // micro-task release; replaceAll is synchronous
-        Promise.resolve().then(() => { applying = false; });
+        Promise.resolve().then(() => {
+            applying = false;
+        });
     }
 
     function redo() {
-        if (!future.value.length) return;
+        if (!future.value.length) {
+            return;
+        }
+
         const next = future.value.pop()!;
         past.value.push(store.snapshot());
         applying = true;
         store.replaceAll(cloneState(next));
-        Promise.resolve().then(() => { applying = false; });
+        Promise.resolve().then(() => {
+            applying = false;
+        });
     }
 
     function clear() {

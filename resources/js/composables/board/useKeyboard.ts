@@ -5,18 +5,28 @@
  * detected so we never steal Cmd+Z, copy, etc. while the user is typing.
  */
 import { onMounted, onUnmounted } from 'vue';
-import { useBoardStore } from './useBoardStore';
 import { useBoardActions } from './useBoardActions';
-import { useHistory } from './useHistory';
+import { useBoardStore } from './useBoardStore';
 import { useClipboard } from './useClipboard';
+import { useHistory } from './useHistory';
 
 const TEXT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
 function isInTextField(): boolean {
     const el = document.activeElement as HTMLElement | null;
-    if (!el) return false;
-    if (TEXT_TAGS.has(el.tagName.toUpperCase())) return true;
-    if (el.isContentEditable) return true;
+
+    if (!el) {
+        return false;
+    }
+
+    if (TEXT_TAGS.has(el.tagName.toUpperCase())) {
+        return true;
+    }
+
+    if (el.isContentEditable) {
+        return true;
+    }
+
     return false;
 }
 
@@ -34,39 +44,57 @@ export function useKeyboard() {
             if (inText) {
                 e.preventDefault();
                 (document.activeElement as HTMLElement).blur();
+
                 return;
             }
+
             if (store.focusActive.value) {
                 e.preventDefault();
                 store.clearFocus();
+
                 return;
             }
+
             if (store.selection.nodes.size || store.selection.edges.size) {
                 e.preventDefault();
                 store.clearSelection();
             }
+
             return;
         }
 
-        if (inText) return;
+        if (inText) {
+            return;
+        }
 
         if (meta && (e.key === 'z' || e.key === 'Z')) {
             e.preventDefault();
-            if (e.shiftKey) redo(); else undo();
+
+            if (e.shiftKey) {
+                redo();
+            } else {
+                undo();
+            }
+
             return;
         }
+
         if (meta && (e.key === 'y' || e.key === 'Y')) {
             e.preventDefault();
             redo();
+
             return;
         }
+
         if (meta && (e.key === 'c' || e.key === 'C')) {
             if (store.selection.nodes.size) {
                 e.preventDefault();
                 copySelection();
             }
+
             return;
         }
+
         if (meta && (e.key === 'd' || e.key === 'D')) {
             // Duplicate in place (copy + paste).
             if (store.selection.nodes.size) {
@@ -74,16 +102,21 @@ export function useKeyboard() {
                 copySelection();
                 paste();
             }
+
             return;
         }
+
         if (meta && (e.key === 'v' || e.key === 'V')) {
             e.preventDefault();
             paste();
+
             return;
         }
+
         if (meta && (e.key === 'a' || e.key === 'A')) {
             e.preventDefault();
             store.setNodeSelection(store.nodes.value.map((n) => n.id));
+
             return;
         }
 
@@ -92,6 +125,7 @@ export function useKeyboard() {
                 e.preventDefault();
                 deleteSelection();
             }
+
             return;
         }
 

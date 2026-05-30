@@ -7,15 +7,19 @@
  * • Multi node selection  → bulk actions (align / distribute / delete).
  * • Empty                 → board summary + shortcut cheat sheet.
  */
+import {
+    Trash2,
+    AlignVerticalJustifyCenter,
+    AlignHorizontalJustifyCenter,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
-import { Trash2, AlignVerticalJustifyCenter, AlignHorizontalJustifyCenter } from 'lucide-vue-next';
+import { useBoardActions } from '@/composables/board/useBoardActions';
+import { useBoardStore } from '@/composables/board/useBoardStore';
 import type { EdgeType, NodeMetadata, NodeType } from '@/types/board';
 import { EDGE_TYPES, NODE_TYPE_MAP } from '@/types/board';
-import { useBoardStore } from '@/composables/board/useBoardStore';
-import { useBoardActions } from '@/composables/board/useBoardActions';
 
-const store    = useBoardStore();
-const actions  = useBoardActions();
+const store = useBoardStore();
+const actions = useBoardActions();
 
 const node = store.singleSelectedNode;
 const edge = store.singleSelectedEdge;
@@ -23,30 +27,57 @@ const edge = store.singleSelectedEdge;
 const multi = computed(() => store.selectedNodes.value.length > 1);
 
 function csvSet(value: string): string[] {
-    return value.split(',').map((s) => s.trim()).filter(Boolean);
+    return value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
 }
 
 function setMetadata(patch: Partial<NodeMetadata>) {
-    if (!node.value) return;
-    actions.patchNode(node.value.id, { metadata: { ...node.value.metadata, ...patch } });
+    if (!node.value) {
+        return;
+    }
+
+    actions.patchNode(node.value.id, {
+        metadata: { ...node.value.metadata, ...patch },
+    });
 }
 
 function changeType(t: NodeType) {
-    if (!node.value) return;
+    if (!node.value) {
+        return;
+    }
+
     actions.patchNode(node.value.id, { type: t });
 }
 
 function alignHorizontal() {
     const ns = store.selectedNodes.value;
-    if (ns.length < 2) return;
-    const avgY = Math.round(ns.reduce((s, n) => s + n.position.y, 0) / ns.length);
-    actions.moveNodes(ns.map((n) => ({ id: n.id, position: { x: n.position.x, y: avgY } })));
+
+    if (ns.length < 2) {
+        return;
+    }
+
+    const avgY = Math.round(
+        ns.reduce((s, n) => s + n.position.y, 0) / ns.length,
+    );
+    actions.moveNodes(
+        ns.map((n) => ({ id: n.id, position: { x: n.position.x, y: avgY } })),
+    );
 }
 function alignVertical() {
     const ns = store.selectedNodes.value;
-    if (ns.length < 2) return;
-    const avgX = Math.round(ns.reduce((s, n) => s + n.position.x, 0) / ns.length);
-    actions.moveNodes(ns.map((n) => ({ id: n.id, position: { x: avgX, y: n.position.y } })));
+
+    if (ns.length < 2) {
+        return;
+    }
+
+    const avgX = Math.round(
+        ns.reduce((s, n) => s + n.position.x, 0) / ns.length,
+    );
+    actions.moveNodes(
+        ns.map((n) => ({ id: n.id, position: { x: avgX, y: n.position.y } })),
+    );
 }
 
 const edgeTypeOptions = EDGE_TYPES;
@@ -66,7 +97,10 @@ const edgeTypeOptions = EDGE_TYPES;
                 <button class="inspector__btn" @click="alignVertical">
                     <AlignVerticalJustifyCenter :size="14" /> Align left
                 </button>
-                <button class="inspector__btn inspector__btn--danger" @click="actions.deleteSelection()">
+                <button
+                    class="inspector__btn inspector__btn--danger"
+                    @click="actions.deleteSelection()"
+                >
                     <Trash2 :size="14" /> Delete all
                 </button>
             </div>
@@ -80,7 +114,11 @@ const edgeTypeOptions = EDGE_TYPES;
                     :style="{ background: NODE_TYPE_MAP[node.type].accent }"
                 />
                 <div class="inspector__title">{{ node.name }}</div>
-                <button class="inspector__icon-btn" title="Delete node" @click="actions.deleteSelection()">
+                <button
+                    class="inspector__icon-btn"
+                    title="Delete node"
+                    @click="actions.deleteSelection()"
+                >
                     <Trash2 :size="14" />
                 </button>
             </div>
@@ -89,14 +127,35 @@ const edgeTypeOptions = EDGE_TYPES;
                 <label>Name</label>
                 <input
                     :value="node.name"
-                    @input="(e) => actions.renameNode(node!.id, (e.target as HTMLInputElement).value)"
+                    @input="
+                        (e) =>
+                            actions.renameNode(
+                                node!.id,
+                                (e.target as HTMLInputElement).value,
+                            )
+                    "
                 />
             </div>
 
             <div class="field">
                 <label>Type</label>
-                <select :value="node.type" @change="(e) => changeType((e.target as HTMLSelectElement).value as NodeType)">
-                    <option v-for="d in Object.values(NODE_TYPE_MAP)" :key="d.type" :value="d.type">{{ d.label }}</option>
+                <select
+                    :value="node.type"
+                    @change="
+                        (e) =>
+                            changeType(
+                                (e.target as HTMLSelectElement)
+                                    .value as NodeType,
+                            )
+                    "
+                >
+                    <option
+                        v-for="d in Object.values(NODE_TYPE_MAP)"
+                        :key="d.type"
+                        :value="d.type"
+                    >
+                        {{ d.label }}
+                    </option>
                 </select>
             </div>
 
@@ -105,7 +164,14 @@ const edgeTypeOptions = EDGE_TYPES;
                 <input
                     :value="node.domain ?? ''"
                     placeholder="checkout, billing, …"
-                    @input="(e) => actions.patchNode(node!.id, { domain: (e.target as HTMLInputElement).value || null })"
+                    @input="
+                        (e) =>
+                            actions.patchNode(node!.id, {
+                                domain:
+                                    (e.target as HTMLInputElement).value ||
+                                    null,
+                            })
+                    "
                 />
             </div>
 
@@ -114,7 +180,14 @@ const edgeTypeOptions = EDGE_TYPES;
                 <input
                     :value="node.tags.join(', ')"
                     placeholder="comma-separated"
-                    @change="(e) => actions.patchNode(node!.id, { tags: csvSet((e.target as HTMLInputElement).value) })"
+                    @change="
+                        (e) =>
+                            actions.patchNode(node!.id, {
+                                tags: csvSet(
+                                    (e.target as HTMLInputElement).value,
+                                ),
+                            })
+                    "
                 />
             </div>
 
@@ -123,7 +196,13 @@ const edgeTypeOptions = EDGE_TYPES;
                 <textarea
                     :value="node.metadata.description ?? ''"
                     rows="2"
-                    @change="(e) => setMetadata({ description: (e.target as HTMLTextAreaElement).value })"
+                    @change="
+                        (e) =>
+                            setMetadata({
+                                description: (e.target as HTMLTextAreaElement)
+                                    .value,
+                            })
+                    "
                 />
             </div>
 
@@ -134,14 +213,31 @@ const edgeTypeOptions = EDGE_TYPES;
                     <input
                         :value="node.metadata.endpoints?.join(', ') ?? ''"
                         placeholder="GET /x, POST /y"
-                        @change="(e) => setMetadata({ endpoints: csvSet((e.target as HTMLInputElement).value) })"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    endpoints: csvSet(
+                                        (e.target as HTMLInputElement).value,
+                                    ),
+                                })
+                        "
                     />
                 </div>
                 <div class="field">
                     <label>Auth</label>
                     <select
                         :value="node.metadata.auth ?? 'none'"
-                        @change="(e) => setMetadata({ auth: (e.target as HTMLSelectElement).value as 'none' | 'apiKey' | 'oauth' | 'jwt' })"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    auth: (e.target as HTMLSelectElement)
+                                        .value as
+                                        | 'none'
+                                        | 'apiKey'
+                                        | 'oauth'
+                                        | 'jwt',
+                                })
+                        "
                     >
                         <option value="none">none</option>
                         <option value="apiKey">apiKey</option>
@@ -153,64 +249,127 @@ const edgeTypeOptions = EDGE_TYPES;
             <template v-if="node.type === 'service'">
                 <div class="field">
                     <label>Runtime</label>
-                    <input :value="node.metadata.runtime ?? ''"
-                        @change="(e) => setMetadata({ runtime: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.runtime ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    runtime: (e.target as HTMLInputElement)
+                                        .value,
+                                })
+                        "
                     />
                 </div>
                 <div class="field">
                     <label>Repo</label>
-                    <input :value="node.metadata.repo ?? ''"
-                        @change="(e) => setMetadata({ repo: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.repo ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    repo: (e.target as HTMLInputElement).value,
+                                })
+                        "
                     />
                 </div>
             </template>
             <template v-if="node.type === 'database'">
                 <div class="field">
                     <label>Engine</label>
-                    <input :value="node.metadata.engine ?? ''"
-                        @change="(e) => setMetadata({ engine: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.engine ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    engine: (e.target as HTMLInputElement)
+                                        .value,
+                                })
+                        "
                     />
                 </div>
                 <div class="field">
                     <label>Tables</label>
-                    <input :value="node.metadata.tables?.join(', ') ?? ''"
-                        @change="(e) => setMetadata({ tables: csvSet((e.target as HTMLInputElement).value) })"
+                    <input
+                        :value="node.metadata.tables?.join(', ') ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    tables: csvSet(
+                                        (e.target as HTMLInputElement).value,
+                                    ),
+                                })
+                        "
                     />
                 </div>
             </template>
             <template v-if="node.type === 'queue'">
                 <div class="field">
                     <label>Broker</label>
-                    <input :value="node.metadata.broker ?? ''"
-                        @change="(e) => setMetadata({ broker: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.broker ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    broker: (e.target as HTMLInputElement)
+                                        .value,
+                                })
+                        "
                     />
                 </div>
                 <div class="field">
                     <label>Topics</label>
-                    <input :value="node.metadata.topics?.join(', ') ?? ''"
-                        @change="(e) => setMetadata({ topics: csvSet((e.target as HTMLInputElement).value) })"
+                    <input
+                        :value="node.metadata.topics?.join(', ') ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    topics: csvSet(
+                                        (e.target as HTMLInputElement).value,
+                                    ),
+                                })
+                        "
                     />
                 </div>
             </template>
             <template v-if="node.type === 'worker'">
                 <div class="field">
                     <label>Schedule</label>
-                    <input :value="node.metadata.schedule ?? ''"
-                        @change="(e) => setMetadata({ schedule: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.schedule ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    schedule: (e.target as HTMLInputElement)
+                                        .value,
+                                })
+                        "
                     />
                 </div>
             </template>
             <template v-if="node.type === 'external'">
                 <div class="field">
                     <label>Vendor</label>
-                    <input :value="node.metadata.vendor ?? ''"
-                        @change="(e) => setMetadata({ vendor: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.vendor ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    vendor: (e.target as HTMLInputElement)
+                                        .value,
+                                })
+                        "
                     />
                 </div>
                 <div class="field">
                     <label>URL</label>
-                    <input :value="node.metadata.url ?? ''"
-                        @change="(e) => setMetadata({ url: (e.target as HTMLInputElement).value })"
+                    <input
+                        :value="node.metadata.url ?? ''"
+                        @change="
+                            (e) =>
+                                setMetadata({
+                                    url: (e.target as HTMLInputElement).value,
+                                })
+                        "
                     />
                 </div>
             </template>
@@ -220,7 +379,11 @@ const edgeTypeOptions = EDGE_TYPES;
         <template v-else-if="edge">
             <div class="inspector__head">
                 <div class="inspector__title">Connection</div>
-                <button class="inspector__icon-btn" title="Delete edge" @click="actions.deleteSelection()">
+                <button
+                    class="inspector__icon-btn"
+                    title="Delete edge"
+                    @click="actions.deleteSelection()"
+                >
                     <Trash2 :size="14" />
                 </button>
             </div>
@@ -236,16 +399,35 @@ const edgeTypeOptions = EDGE_TYPES;
                 <label>Type</label>
                 <select
                     :value="edge.type"
-                    @change="(e) => actions.patchEdge(edge!.id, { type: (e.target as HTMLSelectElement).value as EdgeType })"
+                    @change="
+                        (e) =>
+                            actions.patchEdge(edge!.id, {
+                                type: (e.target as HTMLSelectElement)
+                                    .value as EdgeType,
+                            })
+                    "
                 >
-                    <option v-for="d in edgeTypeOptions" :key="d.type" :value="d.type">{{ d.label }}</option>
+                    <option
+                        v-for="d in edgeTypeOptions"
+                        :key="d.type"
+                        :value="d.type"
+                    >
+                        {{ d.label }}
+                    </option>
                 </select>
             </div>
             <div class="field">
                 <label>Label</label>
                 <input
                     :value="edge.label ?? ''"
-                    @change="(e) => actions.patchEdge(edge!.id, { label: (e.target as HTMLInputElement).value || undefined })"
+                    @change="
+                        (e) =>
+                            actions.patchEdge(edge!.id, {
+                                label:
+                                    (e.target as HTMLInputElement).value ||
+                                    undefined,
+                            })
+                    "
                 />
             </div>
             <div class="field">
@@ -253,32 +435,58 @@ const edgeTypeOptions = EDGE_TYPES;
                 <input
                     type="number"
                     :value="edge.metadata.latencyMs ?? ''"
-                    @change="(e) => {
-                        const v = (e.target as HTMLInputElement).value;
-                        actions.patchEdge(edge!.id, { metadata: { latencyMs: v === '' ? undefined : Number(v) } });
-                    }"
+                    @change="
+                        (e) => {
+                            const v = (e.target as HTMLInputElement).value;
+                            actions.patchEdge(edge!.id, {
+                                metadata: {
+                                    latencyMs: v === '' ? undefined : Number(v),
+                                },
+                            });
+                        }
+                    "
                 />
             </div>
             <div class="field">
                 <label>Retry</label>
                 <select
                     :value="edge.metadata.retry ?? 'none'"
-                    @change="(e) => actions.patchEdge(edge!.id, { metadata: { retry: (e.target as HTMLSelectElement).value as 'none' | 'fixed' | 'exponential' } })"
+                    @change="
+                        (e) =>
+                            actions.patchEdge(edge!.id, {
+                                metadata: {
+                                    retry: (e.target as HTMLSelectElement)
+                                        .value as
+                                        | 'none'
+                                        | 'fixed'
+                                        | 'exponential',
+                                },
+                            })
+                    "
                 >
                     <option value="none">none</option>
                     <option value="fixed">fixed</option>
                     <option value="exponential">exponential</option>
                 </select>
             </div>
-            <div v-if="edge.metadata.retry && edge.metadata.retry !== 'none'" class="field">
+            <div
+                v-if="edge.metadata.retry && edge.metadata.retry !== 'none'"
+                class="field"
+            >
                 <label>Retry max</label>
                 <input
                     type="number"
                     :value="edge.metadata.retryMax ?? ''"
-                    @change="(e) => {
-                        const v = (e.target as HTMLInputElement).value;
-                        actions.patchEdge(edge!.id, { metadata: { retryMax: v === '' ? undefined : Number(v) } });
-                    }"
+                    @change="
+                        (e) => {
+                            const v = (e.target as HTMLInputElement).value;
+                            actions.patchEdge(edge!.id, {
+                                metadata: {
+                                    retryMax: v === '' ? undefined : Number(v),
+                                },
+                            });
+                        }
+                    "
                 />
             </div>
         </template>
@@ -289,11 +497,16 @@ const edgeTypeOptions = EDGE_TYPES;
                 <div class="inspector__title">{{ store.name.value }}</div>
             </div>
             <div class="inspector__stats">
-                <div><span>{{ store.nodes.value.length }}</span> nodes</div>
-                <div><span>{{ store.edges.value.length }}</span> edges</div>
+                <div>
+                    <span>{{ store.nodes.value.length }}</span> nodes
+                </div>
+                <div>
+                    <span>{{ store.edges.value.length }}</span> edges
+                </div>
             </div>
             <div class="inspector__hint">
-                Pick a node from the palette, drag it to position. Drag from the right port of any node onto another to connect them.
+                Pick a node from the palette, drag it to position. Drag from the
+                right port of any node onto another to connect them.
             </div>
         </template>
     </aside>
@@ -319,8 +532,18 @@ const edgeTypeOptions = EDGE_TYPES;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--color-border-subtle);
 }
-.inspector__chip { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
-.inspector__title { font-weight: 600; font-size: 13.5px; flex: 1; letter-spacing: -0.01em; }
+.inspector__chip {
+    width: 10px;
+    height: 10px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.inspector__title {
+    font-weight: 600;
+    font-size: 13.5px;
+    flex: 1;
+    letter-spacing: -0.01em;
+}
 .inspector__icon-btn {
     background: transparent;
     border: 1px solid var(--color-border-subtle);
@@ -328,11 +551,21 @@ const edgeTypeOptions = EDGE_TYPES;
     padding: 4px;
     color: var(--color-text-secondary);
     cursor: pointer;
-    transition: color 80ms ease, border-color 80ms ease, background 80ms ease;
+    transition:
+        color 80ms ease,
+        border-color 80ms ease,
+        background 80ms ease;
 }
-.inspector__icon-btn:hover { color: hsl(0 65% 65%); border-color: color-mix(in srgb, hsl(0 65% 50%) 50%, var(--color-border)); }
+.inspector__icon-btn:hover {
+    color: hsl(0 65% 65%);
+    border-color: color-mix(in srgb, hsl(0 65% 50%) 50%, var(--color-border));
+}
 
-.field { display: flex; flex-direction: column; gap: 4px; }
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 .field label {
     font-size: 10.5px;
     text-transform: uppercase;
@@ -351,7 +584,9 @@ const edgeTypeOptions = EDGE_TYPES;
     font-size: 12.5px;
     color: var(--color-foreground);
     outline: none;
-    transition: border-color 80ms, box-shadow 80ms;
+    transition:
+        border-color 80ms,
+        box-shadow 80ms;
     resize: vertical;
 }
 .field input:focus,
@@ -366,9 +601,16 @@ const edgeTypeOptions = EDGE_TYPES;
     gap: 18px;
     color: var(--color-muted-foreground);
 }
-.inspector__stats span { color: var(--color-foreground); font-weight: 600; font-size: 14px; }
+.inspector__stats span {
+    color: var(--color-foreground);
+    font-weight: 600;
+    font-size: 14px;
+}
 
-.inspector__hint { color: var(--color-muted-foreground); line-height: 1.5; }
+.inspector__hint {
+    color: var(--color-muted-foreground);
+    line-height: 1.5;
+}
 
 .inspector__group {
     display: flex;
@@ -388,7 +630,10 @@ const edgeTypeOptions = EDGE_TYPES;
     border-radius: 6px;
     cursor: pointer;
 }
-.inspector__btn:hover { background: var(--color-surface-2); border-color: var(--color-border-strong); }
+.inspector__btn:hover {
+    background: var(--color-surface-2);
+    border-color: var(--color-border-strong);
+}
 .inspector__btn--danger:hover {
     background: color-mix(in srgb, hsl(0 65% 50%) 14%, transparent);
     border-color: color-mix(in srgb, hsl(0 65% 50%) 60%, var(--color-border));
@@ -403,5 +648,8 @@ const edgeTypeOptions = EDGE_TYPES;
     color: var(--color-foreground);
     font-size: 12px;
 }
-.inspector__arrow { margin: 0 6px; color: var(--color-muted-foreground); }
+.inspector__arrow {
+    margin: 0 6px;
+    color: var(--color-muted-foreground);
+}
 </style>

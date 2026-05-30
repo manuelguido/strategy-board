@@ -16,12 +16,16 @@ export function useBoardActions() {
         record();
         const node = store.addNode({ type, position });
         store.selectNode(node.id);
+
         return node;
     }
 
     function moveNodes(updates: Array<{ id: string; position: Point }>) {
         record();
-        for (const u of updates) store.moveNode(u.id, u.position);
+
+        for (const u of updates) {
+            store.moveNode(u.id, u.position);
+        }
     }
 
     function renameNode(id: string, name: string) {
@@ -29,7 +33,10 @@ export function useBoardActions() {
         store.updateNode(id, { name });
     }
 
-    function patchNode(id: string, patch: Parameters<typeof store.updateNode>[1]) {
+    function patchNode(
+        id: string,
+        patch: Parameters<typeof store.updateNode>[1],
+    ) {
         record();
         store.updateNode(id, patch);
     }
@@ -37,21 +44,43 @@ export function useBoardActions() {
     function deleteSelection() {
         const nodeIds = [...store.selection.nodes];
         const edgeIds = [...store.selection.edges];
-        if (!nodeIds.length && !edgeIds.length) return;
+
+        if (!nodeIds.length && !edgeIds.length) {
+            return;
+        }
+
         record();
-        if (edgeIds.length) store.removeEdges(edgeIds);
-        if (nodeIds.length) store.removeNodes(nodeIds);
+
+        if (edgeIds.length) {
+            store.removeEdges(edgeIds);
+        }
+
+        if (nodeIds.length) {
+            store.removeNodes(nodeIds);
+        }
     }
 
     function connect(source: string, target: string, type: EdgeType) {
         record();
+
         return store.addEdge(source, target, type);
     }
 
-    function patchEdge(id: string, patch: Parameters<typeof store.updateEdge>[1]) {
+    function patchEdge(
+        id: string,
+        patch: Parameters<typeof store.updateEdge>[1],
+    ) {
         record();
         store.updateEdge(id, patch);
     }
 
-    return { addNodeAt, moveNodes, renameNode, patchNode, deleteSelection, connect, patchEdge };
+    return {
+        addNodeAt,
+        moveNodes,
+        renameNode,
+        patchNode,
+        deleteSelection,
+        connect,
+        patchEdge,
+    };
 }

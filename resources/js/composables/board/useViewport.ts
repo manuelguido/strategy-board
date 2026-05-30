@@ -5,8 +5,8 @@
  * layer. World ↔ screen conversions go through this composable so the rest of
  * the code never touches raw transform math.
  */
-import { useBoardStore } from './useBoardStore';
 import type { Point } from '@/types/board';
+import { useBoardStore } from './useBoardStore';
 
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 2.5;
@@ -35,7 +35,10 @@ export function useViewport() {
     }
 
     function panBy(dx: number, dy: number) {
-        viewport.offset = { x: viewport.offset.x + dx, y: viewport.offset.y + dy };
+        viewport.offset = {
+            x: viewport.offset.x + dx,
+            y: viewport.offset.y + dy,
+        };
     }
 
     /**
@@ -44,7 +47,11 @@ export function useViewport() {
      */
     function zoomAt(anchorScreen: Point, factor: number) {
         const nextZoom = clampZoom(viewport.zoom * factor);
-        if (nextZoom === viewport.zoom) return;
+
+        if (nextZoom === viewport.zoom) {
+            return;
+        }
+
         const worldBefore = toWorld(anchorScreen);
         viewport.zoom = nextZoom;
         const worldAfterScreen = toScreen(worldBefore);
@@ -56,8 +63,12 @@ export function useViewport() {
 
     function setZoom(z: number, anchorScreen?: Point) {
         const factor = clampZoom(z) / viewport.zoom;
-        if (anchorScreen) zoomAt(anchorScreen, factor);
-        else viewport.zoom = clampZoom(z);
+
+        if (anchorScreen) {
+            zoomAt(anchorScreen, factor);
+        } else {
+            viewport.zoom = clampZoom(z);
+        }
     }
 
     function reset() {
@@ -67,17 +78,25 @@ export function useViewport() {
     /** Fit all nodes inside `viewportSize` with a margin. */
     function fit(viewportSize: { width: number; height: number }, margin = 64) {
         const ns = nodes.value;
+
         if (!ns.length) {
             reset();
+
             return;
         }
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+
         for (const n of ns) {
             minX = Math.min(minX, n.position.x);
             minY = Math.min(minY, n.position.y);
             maxX = Math.max(maxX, n.position.x + n.width);
             maxY = Math.max(maxY, n.position.y + n.height);
         }
+
         const w = maxX - minX;
         const h = maxY - minY;
         const zx = (viewportSize.width - margin * 2) / w;
@@ -92,5 +111,15 @@ export function useViewport() {
         };
     }
 
-    return { toWorld, toScreen, panBy, zoomAt, setZoom, reset, fit, MIN_ZOOM, MAX_ZOOM };
+    return {
+        toWorld,
+        toScreen,
+        panBy,
+        zoomAt,
+        setZoom,
+        reset,
+        fit,
+        MIN_ZOOM,
+        MAX_ZOOM,
+    };
 }

@@ -25,7 +25,11 @@ export function useClipboard() {
 
     function copySelection(): boolean {
         const selectedIds = [...store.selection.nodes];
-        if (!selectedIds.length) return false;
+
+        if (!selectedIds.length) {
+            return false;
+        }
+
         const selSet = new Set(selectedIds);
         const ns = store.nodes.value
             .filter((n) => selSet.has(n.id))
@@ -40,11 +44,15 @@ export function useClipboard() {
             .map((e) => ({ ...e, metadata: { ...e.metadata } }));
         buffer.value = { nodes: ns, edges: es };
         pasteCounter = 0;
+
         return true;
     }
 
     function paste(): string[] {
-        if (!buffer.value || !buffer.value.nodes.length) return [];
+        if (!buffer.value || !buffer.value.nodes.length) {
+            return [];
+        }
+
         record();
         pasteCounter += 1;
         const offset = 32 * pasteCounter;
@@ -54,7 +62,10 @@ export function useClipboard() {
         for (const original of buffer.value.nodes) {
             const placed = store.addNode({
                 type: original.type,
-                position: { x: original.position.x + offset, y: original.position.y + offset },
+                position: {
+                    x: original.position.x + offset,
+                    y: original.position.y + offset,
+                },
                 name: `${original.name}-copy${pasteCounter > 1 ? pasteCounter : ''}`,
             });
             store.updateNode(placed.id, {
@@ -71,12 +82,23 @@ export function useClipboard() {
         for (const e of buffer.value.edges) {
             const src = idMap.get(e.source);
             const tgt = idMap.get(e.target);
-            if (!src || !tgt) continue;
+
+            if (!src || !tgt) {
+                continue;
+            }
+
             const placed = store.addEdge(src, tgt, e.type);
-            if (placed) store.updateEdge(placed.id, { label: e.label, metadata: { ...e.metadata } });
+
+            if (placed) {
+                store.updateEdge(placed.id, {
+                    label: e.label,
+                    metadata: { ...e.metadata },
+                });
+            }
         }
 
         store.setNodeSelection(newIds);
+
         return newIds;
     }
 

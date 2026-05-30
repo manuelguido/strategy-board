@@ -140,48 +140,54 @@
     --surface-2: hsl(0 0% 97%);
     --surface-3: hsl(0 0% 94%);
     --text-secondary: hsl(0 0% 35%);
-    --text-tertiary:  hsl(0 0% 55%);
-    --border-subtle:  hsl(0 0% 95%);
-    --border-strong:  hsl(0 0% 80%);
+    --text-tertiary: hsl(0 0% 55%);
+    --border-subtle: hsl(0 0% 95%);
+    --border-strong: hsl(0 0% 80%);
 }
 
 .dark {
     /* ── Base canvas / surfaces ─────────────────────────────────────────────── */
-    --background: hsl(225 14% 8%);          /* #0F1218 — never pure black */
-    --surface-1:  hsl(225 14% 11%);         /* #161A22 — panels (toolbar, sidebars) */
-    --surface-2:  hsl(226 16% 15%);         /* #1F2330 — nodes, inputs */
-    --surface-3:  hsl(226 16% 19%);         /* #272D3C — popovers, modals, hover */
+    --background: hsl(225 14% 8%); /* #0F1218 — never pure black */
+    --surface-1: hsl(225 14% 11%); /* #161A22 — panels (toolbar, sidebars) */
+    --surface-2: hsl(226 16% 15%); /* #1F2330 — nodes, inputs */
+    --surface-3: hsl(226 16% 19%); /* #272D3C — popovers, modals, hover */
 
     /* ── Borders (low-contrast, never harsh) ────────────────────────────────── */
-    --border-subtle: hsl(225 10% 18%);      /* hairlines inside panels */
-    --border:        hsl(225 10% 22%);      /* default panel/card edges */
-    --border-strong: hsl(225 10% 30%);      /* hovered/focused edges */
+    --border-subtle: hsl(225 10% 18%); /* hairlines inside panels */
+    --border: hsl(225 10% 22%); /* default panel/card edges */
+    --border-strong: hsl(225 10% 30%); /* hovered/focused edges */
 
     /* ── Text scale ─────────────────────────────────────────────────────────── */
-    --foreground:        hsl(220 20% 95%);  /* #EDF0F7 — primary, boosted for crisp readability */
-    --text-secondary:    hsl(218 12% 68%);  /* #9EA8B8 — labels, metadata — bumped from 65% */
-    --text-tertiary:     hsl(220 8% 50%);   /* #777D8E — disabled, hints */
+    --foreground: hsl(
+        220 20% 95%
+    ); /* #EDF0F7 — primary, boosted for crisp readability */
+    --text-secondary: hsl(
+        218 12% 68%
+    ); /* #9EA8B8 — labels, metadata — bumped from 65% */
+    --text-tertiary: hsl(220 8% 50%); /* #777D8E — disabled, hints */
 
     /* ── Surfaces mapped to shadcn tokens ───────────────────────────────────── */
-    --card:               var(--surface-1);
-    --card-foreground:    var(--foreground);
-    --popover:            var(--surface-3);
+    --card: var(--surface-1);
+    --card-foreground: var(--foreground);
+    --popover: var(--surface-3);
     --popover-foreground: var(--foreground);
-    --secondary:           var(--surface-2);
+    --secondary: var(--surface-2);
     --secondary-foreground: var(--foreground);
-    --muted:               var(--surface-2);
-    --muted-foreground:    var(--text-secondary);
-    --accent:              var(--surface-3);
-    --accent-foreground:   var(--foreground);
-    --input:               var(--surface-2);
+    --muted: var(--surface-2);
+    --muted-foreground: var(--text-secondary);
+    --accent: var(--surface-3);
+    --accent-foreground: var(--foreground);
+    --input: var(--surface-2);
 
     /* ── Single brand accent (muted indigo, no neon) ────────────────────────── */
-    --primary:             hsl(225 68% 72%);  /* #8FA3F2 — slightly lighter for crisper ring */
-    --primary-foreground:  hsl(225 30% 11%);
-    --ring:                hsl(225 68% 72%);
+    --primary: hsl(
+        225 68% 72%
+    ); /* #8FA3F2 — slightly lighter for crisper ring */
+    --primary-foreground: hsl(225 30% 11%);
+    --ring: hsl(225 68% 72%);
 
     /* ── Semantic ───────────────────────────────────────────────────────────── */
-    --destructive:            hsl(0 65% 58%);
+    --destructive: hsl(0 65% 58%);
     --destructive-foreground: hsl(0 0% 98%);
 
     /* ── Charts (kept muted, harmonized with brand) ─────────────────────────── */
@@ -192,15 +198,15 @@
     --chart-5: hsl(0 60% 65%);
 
     /* ── Sidebar (unified with surfaces) ────────────────────────────────────── */
-    --sidebar-background:        var(--surface-1);
-    --sidebar-foreground:        var(--text-secondary);
-    --sidebar-primary:           var(--primary);
+    --sidebar-background: var(--surface-1);
+    --sidebar-foreground: var(--text-secondary);
+    --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent:            var(--surface-2);
+    --sidebar-accent: var(--surface-2);
     --sidebar-accent-foreground: var(--foreground);
-    --sidebar-border:            var(--border-subtle);
-    --sidebar-ring:              var(--ring);
-    --sidebar:                   var(--surface-1);
+    --sidebar-border: var(--border-subtle);
+    --sidebar-ring: var(--ring);
+    --sidebar: var(--surface-1);
 }
 
 @layer base {
